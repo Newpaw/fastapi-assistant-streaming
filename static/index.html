@@ -22,10 +22,10 @@
             background-color: #e9ecef;
             opacity: 1;
         }
-        .spinner-border {
+        .spinner-grow {
             display: none; /* Initially hidden */
         }
-        .loading .spinner-border {
+        .loading .spinner-grow {
             display: inline-block; /* Show when loading */
         }
         .loading #response-text {
@@ -43,7 +43,7 @@
         </div>
         <div id="response" class="mt-4">
             <h2>Odpověď:</h2>
-            <div class="spinner-border text-primary" role="status">
+            <div class="spinner-grow text-primary" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
             <pre id="response-text" class="p-3 border rounded" aria-live="polite"></pre>
