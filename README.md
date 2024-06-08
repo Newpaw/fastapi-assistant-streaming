@@ -51,12 +51,19 @@ Start the FastAPI Development Server:
 fastapi dev main.py
 ```
 
+Or use dockerfile:
+
+```bash
+docker build -t fastapi-assistant-streaming .
+docker run -p 8000:8000 fastapi-assistant-streaming
+```
+
 ### Testing Endpoints
 
 Check the Health:
 
 ```bash
-curl -X 'GET' --url 'http://localhost:8000/'
+curl -X 'GET' --url 'http://localhost:8000/healtcheck'
 ```
 
 Get the Assistant:
