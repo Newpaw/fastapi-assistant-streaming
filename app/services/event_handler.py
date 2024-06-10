@@ -18,12 +18,12 @@ class EventHandler(AsyncAssistantEventHandler):
 
     @override
     async def on_text_created(self, text) -> None:
-        print(f"\nassistant > ", end="", flush=True)
+        #print(f"\nassistant > ", end="", flush=True)
         self.done.clear()
 
     @override
     async def on_text_delta(self, delta, snapshot) -> None:
-        print(delta.value, end="", flush=True)
+        #print(delta.value, end="", flush=True)
         if delta.value is not None and delta.value != "":
             self.queue.put_nowait(delta.value)
 

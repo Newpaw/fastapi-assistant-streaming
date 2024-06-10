@@ -4,3 +4,5 @@ fastapi
 python-dotenv
 uvicorn
 aiofiles
+aiologger
+gunicorn

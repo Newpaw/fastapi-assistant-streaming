@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from aiologger import Logger
 
 from app.dependencies.common import get_assistant_service
 from app.services.assistant_service import AssistantService
 from app.services.event_handler import EventHandler
+from app.core.config import settings
+
 
 router = APIRouter()
-
+logger = Logger.with_default_handlers(level=settings.LOG_LEVEL)
 
 @router.get("/assistant")
 async def get_assistant(
@@ -35,6 +38,7 @@ async def chat(
     query: Query = Body(...),
     assistant_service: AssistantService = Depends(get_assistant_service),
 ):
+    await logger.info(query)
     thread = await assistant_service.retrieve_thread(query.thread_id)
 
     await assistant_service.create_message(thread.id, query.text)
