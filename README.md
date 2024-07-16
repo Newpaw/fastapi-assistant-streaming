@@ -25,7 +25,7 @@ This project demonstrates how to integrate FastAPI with OpenAI's Assistant API, 
 Clone the repository:
 
 ```bash
-git clone https://github.com/xbreid/fastapi-assistant-streaming.git
+git clone https://github.com/Newpaw/fastapi-assistant-streaming
 cd fastapi-assistant-streaming
 ```
 
@@ -58,6 +58,12 @@ docker build -t fastapi-assistant-streaming .
 docker run -p 8000:8000 fastapi-assistant-streaming
 ```
 
+or 
+
+```bash
+docker run -p 8000:8000 --env-file .env newpaw/ai-webchat:latest
+```
+
 ### Testing Endpoints
 
 Check the Health:
@@ -87,10 +93,10 @@ curl -N -X POST \
 http://localhost:8000/api/v1/assistant/chat
 ```
 
-## Contributing
-
-Contributions are always welcome!
 
 ## License
 
 Distributed under the MIT License. See LICENSE for more information.
+
+## Thanks to:
+[xbreid](https://github.com/xbreid)
