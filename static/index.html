@@ -8,25 +8,27 @@
     <style>
         body {
             padding: 20px;
-            background: linear-gradient(to right, #41b6e6, #0019a5);
+            background: linear-gradient(to right, #41b6e6, #0019a5); /* Moderní přechod */
         }
         .container {
             max-width: 600px;
             margin: auto;
-            background-color: #ffffff;
-            border: 1px solid #0092de;
+            background-color: #ffffff; /* Bílá */
+            border: 1px solid #0092de; /* Středně tmavá modrá */
             padding: 20px;
             border-radius: 8px;
         }
         h1, h2 {
-            color: #0019a5;
+            color: #0019a5; /* Tmavě modrá */
         }
+      
         #response-text {
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-y: auto;
-            border: 1px solid #0092de;
-            background-color: #ffffff;
+
+            border: 1px solid #0092de; /* Středně tmavá modrá */
+            background-color: #ffffff; /* Bílá */
             padding: 10px;
             border-radius: 5px;
         }
@@ -35,13 +37,13 @@
             opacity: 1;
         }
         .spinner-grow {
-            display: none;
+            display: none; /* Initially hidden */
         }
         .loading .spinner-grow {
-            display: inline-block;
+            display: inline-block; /* Show when loading */
         }
         .loading #response-text {
-            display: none;
+            display: none; /* Hide response text when loading */
         }
     </style>
 </head>
@@ -51,7 +53,8 @@
         <div class="form-group">
             <label for="user-input">Napiš svůj dotaz a zmáčkni Enter:</label>
             <textarea id="user-input" class="form-control" placeholder="Například... jak mi můžeš pomoci?" aria-describedby="inputHelp" rows="3" autofocus required></textarea>
-            <small id="inputHelp" class="form-text text-muted">Shift+Enter tě posune o řádek níže.</small>
+            <small id="inputHelp" class="form-text text-muted">Napište svůj dotaz a stiskněte Enter.</small>
+            <small id="inputHelp" class="form-text text-muted">Shift+Enter tě posune o řádek.</small>
         </div>
         <div id="response" class="mt-4">
             <h2>Odpověď:</h2>
@@ -70,16 +73,20 @@
             try {
                 const response = await fetch('/api/v1/assistant/threads', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 const data = await response.json();
                 return data.data.id;
             } catch (error) {
-                handleError('Došlo k chybě při vytváření vlákna. Zkuste to prosím znovu.');
+                console.error('Error creating thread:', error);
+                alert('Došlo k chybě při vytváření vlákna. Zkuste to prosím znovu.');
             }
         }
 
         function convertToHTML(text) {
+            // Replace markdown-like syntax with HTML tags
             return text
                 .replace(/^### (.*$)/gim, '<h3>$1</h3>')
                 .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -105,7 +112,10 @@
 
             threadIdDisplay.textContent = threadId;
 
-            toggleLoadingState(true);
+            // Disable the input field while processing the message and show spinner
+            userInput.disabled = true;
+            userInput.classList.add('disabled');
+            responseContainer.classList.add('loading');
 
             try {
                 const response = await fetch('/api/v1/assistant/chat', {
@@ -117,66 +127,44 @@
                     body: JSON.stringify({ text: userInput.value, thread_id: threadId })
                 });
 
-                await handleStreamedResponse(response);
-            } catch (error) {
-                handleError('Došlo k chybě při odesílání zprávy. Zkuste to prosím znovu.');
-            } finally {
-                toggleLoadingState(false);
-            }
-        }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                responseText.innerHTML = '';
 
-        function handleStreamedResponse(response) {
-            const responseText = document.getElementById('response-text');
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            responseText.innerHTML = '';
+                let firstChunkReceived = false;
 
-            let firstChunkReceived = false;
-
-            return new Promise(async (resolve, reject) => {
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-
-                        if (!firstChunkReceived) {
-                            toggleLoadingState(false);
-                            firstChunkReceived = true;
-                        }
-
-                        const chunk = decoder.decode(value, { stream: true });
-                        responseText.innerHTML += convertToHTML(chunk);
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    if (!firstChunkReceived) {
+                        // Hide spinner and show response text
+                        responseContainer.classList.remove('loading');
+                        firstChunkReceived = true;
                     }
-                    resolve();
-                } catch (error) {
-                    reject(error);
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    responseText.innerHTML += convertToHTML(chunk);
                 }
-            });
-        }
-
-        function handleError(message) {
-            console.error(message);
-            alert(message);
-        }
-
-        function toggleLoadingState(isLoading) {
-            const userInput = document.getElementById('user-input');
-            const responseContainer = document.getElementById('response');
-
-            userInput.disabled = isLoading;
-            userInput.classList.toggle('disabled', isLoading);
-            responseContainer.classList.toggle('loading', isLoading);
-
-            if (!isLoading) {
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Došlo k chybě při odesílání zprávy. Zkuste to prosím znovu.');
+            } finally {
+                // Re-enable the input field
                 userInput.value = '';
-                userInput.focus();
+                userInput.disabled = false;
+                userInput.classList.remove('disabled');
+                userInput.focus(); // Optionally set focus back to the input field
             }
         }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
+                event.preventDefault(); // Prevent the default Enter key action
                 sendMessage();
+            } else if (event.key === 'Enter' && event.shiftKey) {
+                // Allow the default behavior of adding a new line
+                event.stopPropagation();
             }
         }
 
