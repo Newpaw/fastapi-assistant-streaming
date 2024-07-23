@@ -8,27 +8,25 @@
     <style>
         body {
             padding: 20px;
-            background: linear-gradient(to right, #41b6e6, #0019a5); /* Moderní přechod */
+            background: linear-gradient(to right, #41b6e6, #0019a5);
         }
         .container {
             max-width: 600px;
             margin: auto;
-            background-color: #ffffff; /* Bílá */
-            border: 1px solid #0092de; /* Středně tmavá modrá */
+            background-color: #ffffff;
+            border: 1px solid #0092de;
             padding: 20px;
             border-radius: 8px;
         }
         h1, h2 {
-            color: #0019a5; /* Tmavě modrá */
+            color: #0019a5;
         }
-      
         #response-text {
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-y: auto;
-
-            border: 1px solid #0092de; /* Středně tmavá modrá */
-            background-color: #ffffff; /* Bílá */
+            border: 1px solid #0092de;
+            background-color: #ffffff;
             padding: 10px;
             border-radius: 5px;
         }
@@ -37,13 +35,13 @@
             opacity: 1;
         }
         .spinner-grow {
-            display: none; /* Initially hidden */
+            display: none;
         }
         .loading .spinner-grow {
-            display: inline-block; /* Show when loading */
+            display: inline-block;
         }
         .loading #response-text {
-            display: none; /* Hide response text when loading */
+            display: none;
         }
     </style>
 </head>
@@ -85,7 +83,6 @@
         }
 
         function convertToHTML(text) {
-            // Replace markdown-like syntax with HTML tags
             return text
                 .replace(/^### (.*$)/gim, '<h3>$1</h3>')
                 .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -96,7 +93,12 @@
                 .replace(/`(.*?)`/gim, '<code>$1</code>')
                 .replace(/\n$/gim, '<br />')
                 .replace(/(\d+)\. (.*$)/gim, '<li>$2</li>')
-                .replace(/^(\d+)\. (.*$)/gim, '<ol><li>$2</li></ol>');
+                .replace(/(\n\d+\.\s.*)+/g, '<ol>$&</ol>')
+                .replace(/(\n- .*)+/g, '<ul>$&</ul>')
+                .replace(/- (.*$)/gim, '<li>$1</li>')
+                .replace(/<\/li>\n<li>/gim, '</li><li>')
+                .replace(/<\/ol>\n<ol>/gim, '</ol><ol>')
+                .replace(/<\/ul>\n<ul>/gim, '</ul><ul>');
         }
 
         async function sendMessage() {
@@ -111,7 +113,6 @@
 
             threadIdDisplay.textContent = threadId;
 
-            // Disable the input field while processing the message and show spinner
             userInput.disabled = true;
             userInput.classList.add('disabled');
             responseContainer.classList.add('loading');
@@ -137,7 +138,6 @@
                     if (done) break;
                     
                     if (!firstChunkReceived) {
-                        // Hide spinner and show response text
                         responseContainer.classList.remove('loading');
                         firstChunkReceived = true;
                     }
@@ -149,20 +149,18 @@
                 console.error('Error sending message:', error);
                 alert('Došlo k chybě při odesílání zprávy. Zkuste to prosím znovu.');
             } finally {
-                // Re-enable the input field
                 userInput.value = '';
                 userInput.disabled = false;
                 userInput.classList.remove('disabled');
-                userInput.focus(); // Optionally set focus back to the input field
+                userInput.focus();
             }
         }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); // Prevent the default Enter key action
+                event.preventDefault();
                 sendMessage();
             } else if (event.key === 'Enter' && event.shiftKey) {
-                // Allow the default behavior of adding a new line
                 event.stopPropagation();
             }
         }
