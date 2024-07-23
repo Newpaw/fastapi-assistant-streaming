@@ -8,15 +8,29 @@
     <style>
         body {
             padding: 20px;
+            background: linear-gradient(to right, #41b6e6, #0019a5); /* Moderní přechod */
         }
         .container {
             max-width: 600px;
             margin: auto;
+            background-color: #ffffff; /* Bílá */
+            border: 1px solid #0092de; /* Středně tmavá modrá */
+            padding: 20px;
+            border-radius: 8px;
         }
+        h1, h2 {
+            color: #0019a5; /* Tmavě modrá */
+        }
+      
         #response-text {
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-y: auto;
+
+            border: 1px solid #0092de; /* Středně tmavá modrá */
+            background-color: #ffffff; /* Bílá */
+            padding: 10px;
+            border-radius: 5px;
         }
         .disabled {
             background-color: #e9ecef;
@@ -40,6 +54,7 @@
             <label for="user-input">Napiš svůj dotaz a zmáčkni Enter:</label>
             <textarea id="user-input" class="form-control" placeholder="Například... jak mi můžeš pomoci?" aria-describedby="inputHelp" rows="3" autofocus required></textarea>
             <small id="inputHelp" class="form-text text-muted">Napište svůj dotaz a stiskněte Enter.</small>
+            <small id="inputHelp" class="form-text text-muted">Shift+Enter tě posune o řádek.</small>
         </div>
         <div id="response" class="mt-4">
             <h2>Odpověď:</h2>
@@ -68,6 +83,21 @@
                 console.error('Error creating thread:', error);
                 alert('Došlo k chybě při vytváření vlákna. Zkuste to prosím znovu.');
             }
+        }
+
+        function convertToHTML(text) {
+            // Replace markdown-like syntax with HTML tags
+            return text
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+                .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+                .replace(/\*(.*)\*/gim, '<i>$1</i>')
+                .replace(/`(.*?)`/gim, '<code>$1</code>')
+                .replace(/\n$/gim, '<br />')
+                .replace(/(\d+)\. (.*$)/gim, '<li>$2</li>')
+                .replace(/^(\d+)\. (.*$)/gim, '<ol><li>$2</li></ol>');
         }
 
         async function sendMessage() {
@@ -99,7 +129,7 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                responseText.textContent = '';
+                responseText.innerHTML = '';
 
                 let firstChunkReceived = false;
 
@@ -113,7 +143,8 @@
                         firstChunkReceived = true;
                     }
 
-                    responseText.textContent += decoder.decode(value, { stream: true });
+                    const chunk = decoder.decode(value, { stream: true });
+                    responseText.innerHTML += convertToHTML(chunk);
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -128,8 +159,12 @@
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent the default Enter key action
                 sendMessage();
+            } else if (event.key === 'Enter' && event.shiftKey) {
+                // Allow the default behavior of adding a new line
+                event.stopPropagation();
             }
         }
 
