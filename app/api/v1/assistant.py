@@ -38,11 +38,21 @@ async def chat(
     query: Query = Body(...),
     assistant_service: AssistantService = Depends(get_assistant_service),
 ):
-    await logger.info(query)
+ 
     thread = await assistant_service.retrieve_thread(query.thread_id)
 
     await assistant_service.create_message(thread.id, query.text)
 
     stream_it = EventHandler()
-    gen = assistant_service.create_gen(thread, stream_it)
-    return StreamingResponse(gen, media_type="text/event-stream")
+    original_gen = assistant_service.create_gen(thread, stream_it)
+    
+    logged_gen = logging_gen(original_gen, query)
+    return StreamingResponse(logged_gen, media_type="text/event-stream")
+
+
+async def logging_gen(gen, query:Query):
+    message = ""
+    async for output in gen:
+        message += output
+        yield output
+    await logger.info(f"text: {query.text}, thread_id: {query.thread_id}, message: {message}")
