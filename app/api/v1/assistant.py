@@ -2,11 +2,14 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from aiologger import Logger
+from typing import AsyncGenerator
 
 from app.dependencies.common import get_assistant_service
 from app.services.assistant_service import AssistantService
 from app.services.event_handler import EventHandler
 from app.core.config import settings
+from app.services.firebase_calls import async_send_metrics
+
 
 
 router = APIRouter()
@@ -38,9 +41,7 @@ async def chat(
     query: Query = Body(...),
     assistant_service: AssistantService = Depends(get_assistant_service),
 ):
- 
     thread = await assistant_service.retrieve_thread(query.thread_id)
-
     await assistant_service.create_message(thread.id, query.text)
 
     stream_it = EventHandler()
@@ -49,10 +50,13 @@ async def chat(
     logged_gen = logging_gen(original_gen, query)
     return StreamingResponse(logged_gen, media_type="text/event-stream")
 
-
-async def logging_gen(gen, query:Query):
+async def logging_gen(gen: AsyncGenerator, query: Query):
     message = ""
     async for output in gen:
         message += output
         yield output
-    await logger.info(f"text: {query.text}, thread_id: {query.thread_id}, message: {message}")
+
+    await async_send_metrics(query.thread_id, "messages", {
+        "bot_message": query.text,
+        "user_message": message
+    })

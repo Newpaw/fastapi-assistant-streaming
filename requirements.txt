@@ -6,3 +6,5 @@ uvicorn
 aiofiles
 aiologger
 gunicorn
+firebase_admin
+aiohttp
