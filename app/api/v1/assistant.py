@@ -4,11 +4,11 @@ from pydantic import BaseModel
 from aiologger import Logger
 from typing import AsyncGenerator
 
-from app.dependencies.common import get_assistant_service
+from app.dependencies.common import get_assistant_service, get_firebase_service
 from app.services.assistant_service import AssistantService
 from app.services.event_handler import EventHandler
 from app.core.config import settings
-from app.services.firebase_calls import async_send_metrics
+
 
 
 
@@ -55,8 +55,11 @@ async def logging_gen(gen: AsyncGenerator, query: Query):
     async for output in gen:
         message += output
         yield output
-
-    await async_send_metrics(query.thread_id, "messages", {
-        "bot_message": query.text,
-        "user_message": message
-    })
+    firebase_db = get_firebase_service()
+    if firebase_db.is_initialized():
+        await firebase_db.async_send_metrics(query.thread_id, "messages", {
+            "bot_message": query.text,
+            "user_message": message
+        })
+    else:
+        await logger.info(f"text: {query.text}, thread_id: {query.thread_id}, message: {message}")
