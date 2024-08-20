@@ -36,19 +36,38 @@ pip install -r requirements.txt
 ```
 
 Set up environment variables:
-Create a .env file in the project root directory and add your OpenAI API key and Assistant ID:
+Create a `.env` file in the project root directory and add your OpenAI API key and Assistant ID:
 
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_ASSISTANT_ID=your_assistant_id_here
 ```
 
+#### Obtaining OpenAI API Key and Assistant ID
+To obtain the necessary credentials, follow these steps:
+
+1. **Register and Log In to OpenAI**:
+    - Go to [OpenAI Registration](https://platform.openai.com/signup) and create an account if you haven't already.
+    - After registering, log in to your OpenAI account.
+
+2. **Get Your OpenAI API Key**:
+    - Navigate to the [API Keys](https://platform.openai.com/account/api-keys) page.
+    - Click on "Create new key" and copy the generated API key. This will be used as your `OPENAI_API_KEY`.
+
+3. **Create an Assistant and Get Assistant ID**:
+    - Go to the [Assistants Page](https://platform.openai.com/assistants/asst_FsHCOcPyojYgJSKoBYQmAA9H).
+    - Follow the instructions to create a new assistant.
+    - Once the assistant is created, you'll receive an Assistant ID which you can find in the assistant’s details. This will be used as your `OPENAI_ASSISTANT_ID`.
+
+Make sure to keep your `.env` file secure and do not share your API keys publicly.
+
+
 ### Running the Application
 
 Start the FastAPI Development Server:
 
 ```bash
-fastapi dev main.py
+uvicorn main:app --reload
 ```
 
 Or use dockerfile:
