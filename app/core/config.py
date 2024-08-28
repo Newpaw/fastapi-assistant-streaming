@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "FastAPI Assistant API"
     OPENAI_API_KEY: str
     OPENAI_ASSISTANT_ID: str
+    AZURE_BASE_URL: str
+    AZURE_OPENAI_API_KEY: str
+    AZURE_OPENAI_ASSISTANT_ID:str
     LOG_LEVEL: str = "INFO"
     PROJECT_VERSION: str = "1.0.1"
 

@@ -12,6 +12,7 @@ from app.core.config import settings
 router = APIRouter()
 logger = Logger.with_default_handlers(level=settings.LOG_LEVEL)
 
+
 @router.get("/assistant")
 async def get_assistant(
     assistant_service: AssistantService = Depends(get_assistant_service),
@@ -33,24 +34,36 @@ class Query(BaseModel):
     thread_id: str
 
 
-@router.post("/assistant/chat")
+@router.post(
+    "/assistant/chat",
+    responses={
+        200: {
+            "description": "Stream of events",
+            "content": {
+                "text/event-stream": {
+                    "example": "data: Message 1\n\ndata: Message 2\n\n"
+                }
+            },
+        }
+    },
+)
 async def chat(
     query: Query = Body(...),
     assistant_service: AssistantService = Depends(get_assistant_service),
 ):
- 
+
     thread = await assistant_service.retrieve_thread(query.thread_id)
 
     await assistant_service.create_message(thread.id, query.text)
 
     stream_it = EventHandler()
     original_gen = assistant_service.create_gen(thread, stream_it)
-    
+
     logged_gen = logging_gen(original_gen, query)
     return StreamingResponse(logged_gen, media_type="text/event-stream")
 
 
-async def logging_gen(gen, query:Query):
+async def logging_gen(gen, query: Query):
     message = ""
     async for output in gen:
         message += output
