@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     AZURE_BASE_URL: str
     AZURE_OPENAI_API_KEY: str
     AZURE_OPENAI_ASSISTANT_ID:str
+    USE_AZURE: bool = True
     LOG_LEVEL: str = "INFO"
     PROJECT_VERSION: str = "1.0.1"
 
