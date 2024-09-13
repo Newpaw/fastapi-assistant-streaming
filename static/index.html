@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat s Buddym</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         body {
             padding: 20px;
             background: linear-gradient(to right, #41b6e6, #0019a5);
         }
+
         .container {
             max-width: 600px;
             margin: auto;
@@ -18,9 +21,12 @@
             padding: 20px;
             border-radius: 8px;
         }
-        h1, h2 {
+
+        h1,
+        h2 {
             color: #0019a5;
         }
+
         #response-text {
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -30,27 +36,44 @@
             padding: 10px;
             border-radius: 5px;
         }
+
+        #reset-thread:hover {
+            color: #0056b3;
+        }
+
         .disabled {
             background-color: #e9ecef;
             opacity: 1;
         }
+
         .spinner-grow {
             display: none;
         }
+
         .loading .spinner-grow {
             display: inline-block;
         }
+
         .loading #response-text {
             display: none;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1 class="text-center">Chatuj s Buddym</h1>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Chatuj s Buddym</h1>
+            <button id="reset-thread" title="Začít novou konverzaci"
+                style="background: none; border: none; color: #0092de; cursor: pointer; font-size: 24px;">
+                <i class="fas fa-undo-alt"></i>
+            </button>
+
+        </div>
         <div class="form-group">
             <label for="user-input">Napiš svůj dotaz a zmáčkni Enter:</label>
-            <textarea id="user-input" class="form-control" placeholder="Například... jak mi můžeš pomoci?" aria-describedby="inputHelp" rows="3" autofocus required></textarea>
+            <textarea id="user-input" class="form-control" placeholder="Například... jak mi můžeš pomoci?"
+                aria-describedby="inputHelp" rows="3" autofocus required></textarea>
             <small id="inputHelp" class="form-text text-muted">Shift+Enter tě posune o řádek.</small>
         </div>
         <div id="response" class="mt-4">
@@ -66,6 +89,19 @@
     <script>
         let threadId = null;
 
+        // Funkce pro resetování threadu a UI
+        function resetThread() {
+            threadId = null; // Resetování threadId, takže bude vytvořen nový thread
+            document.getElementById('response-text').innerHTML = ''; // Vymazání odpovědi
+            document.getElementById('thread-id-display').textContent = ''; // Vymazání zobrazeného thread ID
+        }
+
+        // Event listener pro tlačítko resetu
+        document.getElementById('reset-thread').addEventListener('click', function () {
+            resetThread();
+        });
+
+        // Ostatní existující funkce pro odesílání zprávy
         async function createThread() {
             try {
                 const response = await fetch('/api/v1/assistant/threads', {
@@ -80,13 +116,6 @@
                 console.error('Error creating thread:', error);
                 alert('Došlo k chybě při vytváření vlákna. Zkuste to prosím znovu.');
             }
-        }
-
-        function convertToHTML(text) {
-            return text
-                //.replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                //.replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                //.replace(/^# (.*$)/gim, '<h1>$1</h1>')
         }
 
         async function sendMessage() {
@@ -124,7 +153,7 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     if (!firstChunkReceived) {
                         responseContainer.classList.remove('loading');
                         firstChunkReceived = true;
@@ -144,6 +173,10 @@
             }
         }
 
+        function convertToHTML(text) {
+            return text;
+        }
+
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -156,4 +189,5 @@
         document.getElementById('user-input').addEventListener('keypress', handleKeyPress);
     </script>
 </body>
+
 </html>
